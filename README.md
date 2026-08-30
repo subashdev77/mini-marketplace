@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mini Marketplace — Frontend
 
-## Getting Started
+Next.js frontend for the Mini Marketplace MVP. Connects to a REST API backend with JWT authentication and PostgreSQL.
 
-First, run the development server:
+## Features
+
+- **Role-based access** — Buyer, Seller, Admin
+- **Buyer** — Browse listings, place orders, view order history
+- **Seller** — Create, edit, delete listings; view orders on their products
+- **Admin** — View all orders, approve/reject (from PENDING), complete (from APPROVED)
+- **Order status flow** — `PENDING` → `APPROVED` → `COMPLETED` or `PENDING` → `REJECTED`
+
+## Prerequisites
+
+- Node.js 18+
+- Backend API running at `http://localhost:5080` (PostgreSQL + REST + JWT)
+
+## Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+2. Copy environment config:
+
+```bash
+cp .env.local.example .env.local
+```
+
+3. Start the dev server:
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) — you'll land on the **login** page. After login, you're redirected to the **dashboard**.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## App Flow
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. `/` → redirects to `/login` (guest) or `/dashboard` (logged in)
+2. Login / Register → `/dashboard`
+3. Authenticated pages use a **CRM-style layout** (sidebar + header)
 
-## Learn More
+## Environment
 
-To learn more about Next.js, take a look at the following resources:
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_API_URL` | Backend REST API base URL (default: `http://localhost:5080`) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Test Flow
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Start backend on port 5080
+2. Register first admin (only works once):
+   ```json
+   POST /api/auth/register
+   { "email": "admin@marketplace.com", "password": "admin123", "name": "Admin", "role": "ADMIN" }
+   ```
+3. Register a seller and a buyer via `/register`
+4. Seller creates listings at `/my-listings`
+5. Buyer browses `/marketplace` and places orders on listing detail pages
+6. Admin manages orders at `/admin`
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+app/
+  page.tsx              # Redirect to login or dashboard
+  login/ register/      # Auth (no sidebar)
+  (app)/                # Authenticated routes (sidebar + header)
+    layout.tsx
+    dashboard/          # Landing after login
+    marketplace/        # Browse listings
+    listings/[id]/
+    my-orders/ my-listings/ seller-orders/ admin/ profile/
+components/
+  layout/               # Sidebar, Header, AppShell
+  ui/                   # Button, Input, Field, etc.
+context/                # AuthContext (JWT in localStorage)
+hooks/                  # useAuth
+lib/
+  api/                  # REST client + endpoint functions
+  token.ts              # JWT storage helpers
+types/                  # User, Listing, Order, Role enums
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## API Integration
+
+All requests use `Authorization: Bearer <token>` for protected routes. Responses follow:
+
+```json
+{ "success": true, "data": ... }
+{ "success": false, "message": "Error description" }
+```
+
+Errors from the API `message` field are shown in the UI.
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
