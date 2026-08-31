@@ -44,7 +44,7 @@ export function OrderCard({
             </p>
             {order.adminNote && (
               <p className="mt-2 rounded-lg bg-zinc-50 p-2 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-                Admin note: {order.adminNote}
+                Note: {order.adminNote}
               </p>
             )}
           </div>

@@ -78,3 +78,7 @@ export interface PlaceOrderInput {
 export interface AdminOrderActionInput {
   adminNote?: string;
 }
+
+export interface SellerOrderActionInput {
+  note?: string;
+}
